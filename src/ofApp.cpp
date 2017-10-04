@@ -4,6 +4,7 @@
 void ofApp::setup(){
     // TODO add control to switch between mic and system audio
     fft.setup(2048);
+//    fft.stream.setup(this, 2, 0, 44100, 2048, 4); // for system audio
 
     ofSetVerticalSync(true);
     ofSetFrameRate(60);
@@ -50,7 +51,6 @@ void ofApp::setup(){
 void ofApp::update(){
     fft.update();
     float value = fft.getBins()[50]; // TODO we want this to be the amplitude
-//    float value = fft.getAmplitude();
 
     //grab a new frame
     vidGrabber.update();
@@ -67,8 +67,8 @@ void ofApp::update(){
             ofVec3f tmpVec = mainMesh.getVertex(i);
 
             //melt a little if the sound is loud enough
-//            if (value > 0.06) { // microphone
-            if (value > 0.02) { // loopback
+            if (value > 0.06) { // microphone
+//            if (value > 0.02) { // loopback
                 int yInitial = tmpVec.y;
                 tmpVec.y += (sampleColor.getBrightness() * value * 6) / 3;
                 tmpVec.y = (int)tmpVec.y % (int)vidGrabber.getHeight(); // make the bottom pixels jump to the top
@@ -113,6 +113,14 @@ void ofApp::draw(){
     ofSetColor(255);
     string msg = "fps: " + ofToString(ofGetFrameRate(), 2);
     ofDrawBitmapString(msg, 10, 20);
+
+    //plot FFT for debugging purposes
+    ofPushMatrix();
+    ofTranslate(16, 16);
+    ofSetColor(255);
+    ofDrawBitmapString("Frequency Domain", 0, 0);
+    plot(fft.getBins(), 128);
+    ofPopMatrix();
 }
 
 //--------------------------------------------------------------
@@ -172,4 +180,23 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
+}
+
+//--------------------------------------------------------------
+void ofApp::plot(vector<float> & buffer, float scale) {
+    ofNoFill();
+    int n = MIN(1024, buffer.size());
+    ofDrawRectangle(0, 0, n, scale);
+    ofPushMatrix();
+    ofTranslate(0, scale);
+    ofScale(1, -scale);
+    ofBeginShape();
+    int fractionFactor = 1; // sometimes we only care about lower-frequency sounds; scale them up
+    for (int i = 0; i < n / fractionFactor; i++) {
+        for (int f = 0; f < fractionFactor; f++) {
+            ofVertex(i * fractionFactor + f, buffer[i]);
+        }
+    }
+    ofEndShape();
+    ofPopMatrix();
 }

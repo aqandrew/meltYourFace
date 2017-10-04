@@ -25,6 +25,7 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+        void plot(vector<float> & buffer, float scale);
 
         ofCamera cam; // add mouse controls for camera movement
         float extrusionAmount;
