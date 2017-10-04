@@ -1,4 +1,2 @@
 ofxFft
-ofxFlowTools
 ofxGui
-ofxOpenCv
