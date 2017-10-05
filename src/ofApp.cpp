@@ -65,6 +65,8 @@ void ofApp::setupGui(){
     doFullScreen.addListener(this, &ofApp::setFullScreen);
     panel.add(toggleGuiDraw.set("show GUI (G)", true));
     panel.add(showPlot.set("show plot (P)", true));
+    panel.add(useMicrophone.set("use microphone (M)", true));
+    useMicrophone.addListener(this, &ofApp::setAudioSource);
 }
 
 //--------------------------------------------------------------
@@ -163,6 +165,9 @@ void ofApp::keyPressed(int key){
         case 'p':
             showPlot.set(!showPlot.get());
             break;
+        case 'm':
+            useMicrophone.set(!useMicrophone.get());
+            break;
     }
 }
 
@@ -234,4 +239,15 @@ void ofApp::plot(vector<float> & buffer, float scale) {
     }
     ofEndShape();
     ofPopMatrix();
+}
+
+//--------------------------------------------------------------
+void ofApp::setAudioSource(bool& _useMicrophone) {
+    if (_useMicrophone) {
+        fft.stream.setDeviceID(0); // microphone
+    } else {
+        fft.stream.setDeviceID(5); // Loopback audio
+    }
+
+    fft.setup(2048);
 }

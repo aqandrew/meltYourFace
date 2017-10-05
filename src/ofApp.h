@@ -27,6 +27,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
         void plot(vector<float> & buffer, float scale);
+        void setAudioSource(bool& _useMicrophone);
 
         ofCamera cam; // add mouse controls for camera movement
         float extrusionAmount;
@@ -39,6 +40,7 @@ class ofApp : public ofBaseApp{
         ofxPanel panel;
         ofParameter<bool> toggleGuiDraw;
         ofParameter<bool> doFullScreen;
+        ofParameter<bool> useMicrophone;
         void setFullScreen(bool& _value) { ofSetFullscreen(_value); }
         ofParameter<bool> showPlot;
         int plotPadding;
