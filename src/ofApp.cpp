@@ -52,6 +52,8 @@ void ofApp::setup(){
     extrusionAmount = 70.0;
 
     setupGui();
+
+    plotPadding = 30;
 }
 
 void ofApp::setupGui(){
@@ -133,12 +135,13 @@ void ofApp::draw(){
 //    ofDrawBitmapString(msg, 10, 20);
 
     if (showPlot) {
+        int plotScale = 128;
         //plot FFT for debugging purposes
         ofPushMatrix();
-        ofTranslate(16, 16);
+        ofTranslate(16, ofGetHeight() - plotScale - plotPadding);
         ofSetColor(255);
         ofDrawBitmapString("Frequency Domain", 0, 0);
-        plot(fft.getBins(), 128);
+        plot(fft.getBins(), plotScale);
         ofPopMatrix();
     }
 
@@ -215,11 +218,12 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 //--------------------------------------------------------------
 void ofApp::plot(vector<float> & buffer, float scale) {
+    // Note: plot is drawn relative to label, drawn in draw()
     ofNoFill();
     int n = MIN(1024, buffer.size());
-    ofDrawRectangle(0, 0, n, scale);
+    ofDrawRectangle(0, plotPadding / 2, n, scale);
     ofPushMatrix();
-    ofTranslate(0, scale);
+    ofTranslate(0, scale + plotPadding / 2);
     ofScale(1, -scale);
     ofBeginShape();
     int fractionFactor = 1; // sometimes we only care about lower-frequency sounds; scale them up

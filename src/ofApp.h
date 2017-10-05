@@ -41,5 +41,6 @@ class ofApp : public ofBaseApp{
         ofParameter<bool> doFullScreen;
         void setFullScreen(bool& _value) { ofSetFullscreen(_value); }
         ofParameter<bool> showPlot;
+        int plotPadding;
 		
 };
