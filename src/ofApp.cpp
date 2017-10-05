@@ -3,8 +3,13 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     // TODO add control to switch between mic and system audio
+//    cout << "Sound devices:" << endl;
+//    vector<ofSoundDevice> soundDevices = fft.stream.getDeviceList();
+//    for (int i = 0; i < soundDevices.size(); i++) {
+//        cout << '\t' << soundDevices[i] << endl;
+//    }
+//    fft.stream.setDeviceID(5); // loopback audio
     fft.setup(2048);
-//    fft.stream.setup(this, 2, 0, 44100, 2048, 4); // for system audio
 
     ofSetVerticalSync(true);
     ofSetFrameRate(60);
@@ -45,6 +50,19 @@ void ofApp::setup(){
 
     //this determines how much we push the meshes out
     extrusionAmount = 70.0;
+
+    setupGui();
+}
+
+void ofApp::setupGui(){
+    panel.setup("settings");
+    panel.setDefaultBackgroundColor(ofColor(0, 0, 0, 127));
+    panel.setDefaultFillColor(ofColor(160, 160, 160, 160));
+
+    panel.add(doFullScreen.set("fullscreen (F)", false));
+    doFullScreen.addListener(this, &ofApp::setFullScreen);
+    panel.add(toggleGuiDraw.set("show GUI (G)", true));
+    panel.add(showPlot.set("show plot (P)", true));
 }
 
 //--------------------------------------------------------------
@@ -110,24 +128,36 @@ void ofApp::draw(){
     cam.end();
 
     //draw framerate for fun
-    ofSetColor(255);
-    string msg = "fps: " + ofToString(ofGetFrameRate(), 2);
-    ofDrawBitmapString(msg, 10, 20);
+//    ofSetColor(255);
+//    string msg = "fps: " + ofToString(ofGetFrameRate(), 2);
+//    ofDrawBitmapString(msg, 10, 20);
 
-    //plot FFT for debugging purposes
-    ofPushMatrix();
-    ofTranslate(16, 16);
-    ofSetColor(255);
-    ofDrawBitmapString("Frequency Domain", 0, 0);
-    plot(fft.getBins(), 128);
-    ofPopMatrix();
+    if (showPlot) {
+        //plot FFT for debugging purposes
+        ofPushMatrix();
+        ofTranslate(16, 16);
+        ofSetColor(255);
+        ofDrawBitmapString("Frequency Domain", 0, 0);
+        plot(fft.getBins(), 128);
+        ofPopMatrix();
+    }
+
+    if (toggleGuiDraw.get()) {
+        panel.draw();
+    }
 }
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     switch(key) {
         case 'f':
-            ofToggleFullscreen();
+            doFullScreen.set(!doFullScreen.get());
+            break;
+        case 'g':
+            toggleGuiDraw.set(!toggleGuiDraw.get());
+            break;
+        case 'p':
+            showPlot.set(!showPlot.get());
             break;
     }
 }

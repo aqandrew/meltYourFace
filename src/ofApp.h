@@ -6,6 +6,7 @@
 
 #include "ofMain.h"
 #include "ofxEasyFft.h"
+#include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
 
@@ -33,5 +34,12 @@ class ofApp : public ofBaseApp{
         ofVideoGrabber vidGrabber;
 
         ofxEasyFft fft;
+
+        void setupGui();
+        ofxPanel panel;
+        ofParameter<bool> toggleGuiDraw;
+        ofParameter<bool> doFullScreen;
+        void setFullScreen(bool& _value) { ofSetFullscreen(_value); }
+        ofParameter<bool> showPlot;
 		
 };
