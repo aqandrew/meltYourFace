@@ -143,6 +143,7 @@ void ofApp::draw(){
     }
 
     if (toggleGuiDraw.get()) {
+        ofDisableDepthTest();
         panel.draw();
     }
 }
