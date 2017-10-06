@@ -21,30 +21,7 @@ void ofApp::setup(){
     vidGrabber.setVerbose(true);
     vidGrabber.setup(320,240);
 
-    //store the width and height for convenience
-    int width = vidGrabber.getWidth();
-    int height = vidGrabber.getHeight();
-
-    //add one vertex to the mesh for each pixel
-    for (int y = 0; y < height; y++){
-        for (int x = 0; x<width; x++){
-            mainMesh.addVertex(ofPoint(x,y,0));    // mesh index = x + y*width
-            // this replicates the pixel array within the camera bitmap...
-            mainMesh.addColor(ofFloatColor(0,0,0));  // placeholder for colour data, we'll get this from the camera
-        }
-    }
-
-    for (int y = 0; y<height-1; y++){
-        for (int x=0; x<width-1; x++){
-            mainMesh.addIndex(x+y*width);                // 0
-            mainMesh.addIndex((x+1)+y*width);            // 1
-            mainMesh.addIndex(x+(y+1)*width);            // 10
-
-            mainMesh.addIndex((x+1)+y*width);            // 1
-            mainMesh.addIndex((x+1)+(y+1)*width);        // 11
-            mainMesh.addIndex(x+(y+1)*width);            // 10
-        }
-    }
+    resetMesh();
 
     //this is an annoying thing that is used to flip the camera
     cam.setScale(1,-1,1);
@@ -66,6 +43,8 @@ void ofApp::setupGui(){
     panel.add(toggleGuiDraw.set("show GUI (G)", true));
     panel.add(useMicrophone.set("use microphone (M)", useMicrophone.get()));
     useMicrophone.addListener(this, &ofApp::setAudioSource);
+    panel.add(reset.setup("reset (R)"));
+    reset.addListener(this, &ofApp::resetMesh);
 }
 
 //--------------------------------------------------------------
@@ -183,6 +162,9 @@ void ofApp::keyPressed(int key){
         case 'm':
             useMicrophone.set(!useMicrophone.get());
             break;
+        case 'r':
+            resetMesh();
+            break;
     }
 }
 
@@ -248,4 +230,34 @@ void ofApp::setAudioSource(bool& _useMicrophone) {
 
     audioInput.setup(this, 0, 2, 44100, samplesPerBuffer, 4);
 
+}
+
+//--------------------------------------------------------------
+void ofApp::resetMesh() {
+    mainMesh.clear();
+
+    //store the width and height for convenience
+    int width = vidGrabber.getWidth();
+    int height = vidGrabber.getHeight();
+
+    //add one vertex to the mesh for each pixel
+    for (int y = 0; y < height; y++){
+        for (int x = 0; x<width; x++){
+            mainMesh.addVertex(ofPoint(x,y,0));    // mesh index = x + y*width
+            // this replicates the pixel array within the camera bitmap...
+            mainMesh.addColor(ofFloatColor(0,0,0));  // placeholder for colour data, we'll get this from the camera
+        }
+    }
+
+    for (int y = 0; y<height-1; y++){
+        for (int x=0; x<width-1; x++){
+            mainMesh.addIndex(x+y*width);                // 0
+            mainMesh.addIndex((x+1)+y*width);            // 1
+            mainMesh.addIndex(x+(y+1)*width);            // 10
+
+            mainMesh.addIndex((x+1)+y*width);            // 1
+            mainMesh.addIndex((x+1)+(y+1)*width);        // 11
+            mainMesh.addIndex(x+(y+1)*width);            // 10
+        }
+    }
 }

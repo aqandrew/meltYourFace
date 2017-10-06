@@ -26,6 +26,7 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
         void setAudioSource(bool& _useMicrophone);
+        void resetMesh();
 
         ofCamera cam; // add mouse controls for camera movement
         float extrusionAmount;
@@ -44,6 +45,7 @@ class ofApp : public ofBaseApp{
         ofParameter<bool> toggleGuiDraw;
         ofParameter<bool> doFullScreen;
         ofParameter<bool> useMicrophone;
+        ofxButton reset;
         void setFullScreen(bool& _value) { ofSetFullscreen(_value); }
 		
 };
