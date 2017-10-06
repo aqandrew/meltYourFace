@@ -6,6 +6,9 @@ void ofApp::setup(){
 
     smoothedVol = 0.0;
     samplesPerBuffer = 128;
+    useMicrophone.set(true);
+    int inputDevice = (useMicrophone.get()) ? 0 : 5;
+    audioInput.setDeviceID(inputDevice);
     audioInput.setup(this, 0, 2, 44100, samplesPerBuffer, 4);
     left.assign(samplesPerBuffer, 0.0);
     right.assign(samplesPerBuffer, 0.0);
@@ -61,7 +64,7 @@ void ofApp::setupGui(){
     panel.add(doFullScreen.set("fullscreen (F)", false));
     doFullScreen.addListener(this, &ofApp::setFullScreen);
     panel.add(toggleGuiDraw.set("show GUI (G)", true));
-    panel.add(useMicrophone.set("use microphone (M)", true));
+    panel.add(useMicrophone.set("use microphone (M)", useMicrophone.get()));
     useMicrophone.addListener(this, &ofApp::setAudioSource);
 }
 
@@ -85,7 +88,7 @@ void ofApp::update(){
 
             //melt a little if the sound is loud enough
             float threshold = 0.01;
-            float meltFactor = (useMicrophone.get()) ? 10 : 20;
+            float meltFactor = (useMicrophone.get()) ? 10 : 25;
             if (value > threshold) {
                 int yInitial = tmpVec.y;
                 tmpVec.y += sampleColor.getBrightness() * value * meltFactor;
@@ -235,6 +238,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 //--------------------------------------------------------------
 void ofApp::setAudioSource(bool& _useMicrophone) {
+    cout << "are we gonna use mic? " << _useMicrophone << endl;
 
     if (_useMicrophone) {
         audioInput.setDeviceID(0); // microphone
