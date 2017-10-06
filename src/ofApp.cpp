@@ -4,7 +4,6 @@
 void ofApp::setup(){
     smoothedVol = 0.0;
     samplesPerBuffer = 128;
-    fft.setup(2048);
     audioInput.setup(this, 0, 2, 44100, samplesPerBuffer, 4);
     left.assign(samplesPerBuffer, 0.0);
     right.assign(samplesPerBuffer, 0.0);
@@ -50,8 +49,6 @@ void ofApp::setup(){
     extrusionAmount = 70.0;
 
     setupGui();
-
-    plotPadding = 30;
 }
 
 void ofApp::setupGui(){
@@ -62,17 +59,14 @@ void ofApp::setupGui(){
     panel.add(doFullScreen.set("fullscreen (F)", false));
     doFullScreen.addListener(this, &ofApp::setFullScreen);
     panel.add(toggleGuiDraw.set("show GUI (G)", true));
-    panel.add(showPlot.set("show plot (P)", true));
     panel.add(useMicrophone.set("use microphone (M)", true));
     useMicrophone.addListener(this, &ofApp::setAudioSource);
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    fft.update();
-    float value = fft.getBins()[50]; // this will be the amplitude at C#5
-//    float value = smoothedVol; // TODO figure out why audioIn isn't getting called.
-    // Maybe something to do with multiple input channels?
+    float value = smoothedVol;
+    cout << "update value: " << value << endl;
 
     //grab a new frame
     vidGrabber.update();
@@ -89,10 +83,11 @@ void ofApp::update(){
             ofVec3f tmpVec = mainMesh.getVertex(i);
 
             //melt a little if the sound is loud enough
-            float threshold = (useMicrophone.get()) ? 0.06 : 0.01;
+//            float threshold = (useMicrophone.get()) ? 0.06 : 0.01;
+            float threshold = 0.01;
             if (value > threshold) {
                 int yInitial = tmpVec.y;
-                tmpVec.y += (sampleColor.getBrightness() * value * 6) / 3;
+                tmpVec.y += sampleColor.getBrightness() * value * 10;
                 tmpVec.y = (int)tmpVec.y % (int)vidGrabber.getHeight(); // make the bottom pixels jump to the top
                 tmpVec.z += (tmpVec.y - yInitial) / 5;
 //                tmpVec.y += (sampleColor.getBrightness()) / 8;
@@ -136,17 +131,6 @@ void ofApp::draw(){
 //    string msg = "fps: " + ofToString(ofGetFrameRate(), 2);
 //    ofDrawBitmapString(msg, 10, 20);
 
-    if (showPlot) {
-        int plotScale = 128;
-        //plot FFT for debugging purposes
-        ofPushMatrix();
-        ofTranslate(16, ofGetHeight() - plotScale - plotPadding);
-        ofSetColor(255);
-        ofDrawBitmapString("Frequency Domain", 0, 0);
-        plot(fft.getBins(), plotScale);
-        ofPopMatrix();
-    }
-
     if (toggleGuiDraw.get()) {
         ofDisableDepthTest();
         panel.draw();
@@ -155,7 +139,7 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::audioIn(float * input, int bufferSize, int nChannels){
-    cout << "audioIn called!" << endl;
+
     // see audioInputExample
     float curVol = 0.0;
 
@@ -191,9 +175,6 @@ void ofApp::keyPressed(int key){
             break;
         case 'g':
             toggleGuiDraw.set(!toggleGuiDraw.get());
-            break;
-        case 'p':
-            showPlot.set(!showPlot.get());
             break;
         case 'm':
             useMicrophone.set(!useMicrophone.get());
@@ -252,36 +233,13 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 }
 
 //--------------------------------------------------------------
-void ofApp::plot(vector<float> & buffer, float scale) {
-    // Note: plot is drawn relative to label, drawn in draw()
-    ofNoFill();
-    int n = MIN(1024, buffer.size());
-    ofDrawRectangle(0, plotPadding / 2, n, scale);
-    ofPushMatrix();
-    ofTranslate(0, scale + plotPadding / 2);
-    ofScale(1, -scale);
-    ofBeginShape();
-    int fractionFactor = 1; // sometimes we only care about lower-frequency sounds; scale them up
-    for (int i = 0; i < n / fractionFactor; i++) {
-        for (int f = 0; f < fractionFactor; f++) {
-            ofVertex(i * fractionFactor + f, buffer[i]);
-        }
-    }
-    ofEndShape();
-    ofPopMatrix();
-}
-
-//--------------------------------------------------------------
 void ofApp::setAudioSource(bool& _useMicrophone) {
     if (_useMicrophone) {
-        fft.stream.setDeviceID(0); // microphone
-        audioInput.setDeviceID(0);
+        audioInput.setDeviceID(0); // microphone
     } else {
-        fft.stream.setDeviceID(5); // Loopback audio
-        audioInput.setDeviceID(5);
+        audioInput.setDeviceID(5); // Loopback audio
     }
 
-    fft.setup(2048);
     audioInput.setup(this, 0, 2, 44100, samplesPerBuffer, 4);
 
 }

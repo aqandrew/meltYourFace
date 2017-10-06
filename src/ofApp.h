@@ -5,7 +5,6 @@
  */
 
 #include "ofMain.h"
-#include "ofxEasyFft.h"
 #include "ofxGui.h"
 
 class ofApp : public ofBaseApp{
@@ -26,7 +25,6 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-        void plot(vector<float> & buffer, float scale);
         void setAudioSource(bool& _useMicrophone);
 
         ofCamera cam; // add mouse controls for camera movement
@@ -34,7 +32,6 @@ class ofApp : public ofBaseApp{
         ofVboMesh mainMesh;
         ofVideoGrabber vidGrabber;
 
-        ofxEasyFft fft;
         ofSoundStream audioInput;
         void audioIn(float * input, int bufferSize, int nChannels);
         int samplesPerBuffer;
@@ -48,7 +45,5 @@ class ofApp : public ofBaseApp{
         ofParameter<bool> doFullScreen;
         ofParameter<bool> useMicrophone;
         void setFullScreen(bool& _value) { ofSetFullscreen(_value); }
-        ofParameter<bool> showPlot;
-        int plotPadding;
 		
 };
