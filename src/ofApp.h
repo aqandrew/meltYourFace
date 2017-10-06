@@ -35,6 +35,12 @@ class ofApp : public ofBaseApp{
         ofVideoGrabber vidGrabber;
 
         ofxEasyFft fft;
+        ofSoundStream audioInput;
+        void audioIn(float * input, int bufferSize, int nChannels);
+        int samplesPerBuffer;
+        vector<float> left;
+        vector<float> right;
+        float smoothedVol;
 
         void setupGui();
         ofxPanel panel;

@@ -2,14 +2,12 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    // TODO add control to switch between mic and system audio
-//    cout << "Sound devices:" << endl;
-//    vector<ofSoundDevice> soundDevices = fft.stream.getDeviceList();
-//    for (int i = 0; i < soundDevices.size(); i++) {
-//        cout << '\t' << soundDevices[i] << endl;
-//    }
-//    fft.stream.setDeviceID(5); // loopback audio
+    smoothedVol = 0.0;
+    samplesPerBuffer = 128;
     fft.setup(2048);
+    audioInput.setup(this, 0, 2, 44100, samplesPerBuffer, 4);
+    left.assign(samplesPerBuffer, 0.0);
+    right.assign(samplesPerBuffer, 0.0);
 
     ofSetVerticalSync(true);
     ofSetFrameRate(60);
@@ -72,7 +70,9 @@ void ofApp::setupGui(){
 //--------------------------------------------------------------
 void ofApp::update(){
     fft.update();
-    float value = fft.getBins()[50]; // TODO we want this to be the amplitude
+    float value = fft.getBins()[50]; // this will be the amplitude at C#5
+//    float value = smoothedVol; // TODO figure out why audioIn isn't getting called.
+    // Maybe something to do with multiple input channels?
 
     //grab a new frame
     vidGrabber.update();
@@ -89,8 +89,8 @@ void ofApp::update(){
             ofVec3f tmpVec = mainMesh.getVertex(i);
 
             //melt a little if the sound is loud enough
-            if (value > 0.06) { // microphone
-//            if (value > 0.02) { // loopback
+            float threshold = (useMicrophone.get()) ? 0.06 : 0.01;
+            if (value > threshold) {
                 int yInitial = tmpVec.y;
                 tmpVec.y += (sampleColor.getBrightness() * value * 6) / 3;
                 tmpVec.y = (int)tmpVec.y % (int)vidGrabber.getHeight(); // make the bottom pixels jump to the top
@@ -151,6 +151,36 @@ void ofApp::draw(){
         ofDisableDepthTest();
         panel.draw();
     }
+}
+
+//--------------------------------------------------------------
+void ofApp::audioIn(float * input, int bufferSize, int nChannels){
+    cout << "audioIn called!" << endl;
+    // see audioInputExample
+    float curVol = 0.0;
+
+    // samples are "interleaved"
+    int numCounted = 0;
+
+    //lets go through each sample and calculate the root mean square which is a rough way to calculate volume
+    for (int i = 0; i < bufferSize; i++){
+        left[i]        = input[i*2]*0.5;
+        right[i]    = input[i*2+1]*0.5;
+
+        curVol += left[i] * left[i];
+        curVol += right[i] * right[i];
+        numCounted+=2;
+    }
+
+    //this is how we get the mean of rms :)
+    curVol /= (float)numCounted;
+
+    // this is how we get the root of rms :)
+    curVol = sqrt( curVol );
+
+    smoothedVol *= 0.93;
+    smoothedVol += 0.07 * curVol;
+
 }
 
 //--------------------------------------------------------------
@@ -245,9 +275,13 @@ void ofApp::plot(vector<float> & buffer, float scale) {
 void ofApp::setAudioSource(bool& _useMicrophone) {
     if (_useMicrophone) {
         fft.stream.setDeviceID(0); // microphone
+        audioInput.setDeviceID(0);
     } else {
         fft.stream.setDeviceID(5); // Loopback audio
+        audioInput.setDeviceID(5);
     }
 
     fft.setup(2048);
+    audioInput.setup(this, 0, 2, 44100, samplesPerBuffer, 4);
+
 }
