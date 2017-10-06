@@ -2,6 +2,8 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    audioInput.printDeviceList();
+
     smoothedVol = 0.0;
     samplesPerBuffer = 128;
     audioInput.setup(this, 0, 2, 44100, samplesPerBuffer, 4);
@@ -66,7 +68,6 @@ void ofApp::setupGui(){
 //--------------------------------------------------------------
 void ofApp::update(){
     float value = smoothedVol;
-    cout << "update value: " << value << endl;
 
     //grab a new frame
     vidGrabber.update();
@@ -83,11 +84,11 @@ void ofApp::update(){
             ofVec3f tmpVec = mainMesh.getVertex(i);
 
             //melt a little if the sound is loud enough
-//            float threshold = (useMicrophone.get()) ? 0.06 : 0.01;
             float threshold = 0.01;
+            float meltFactor = (useMicrophone.get()) ? 10 : 20;
             if (value > threshold) {
                 int yInitial = tmpVec.y;
-                tmpVec.y += sampleColor.getBrightness() * value * 10;
+                tmpVec.y += sampleColor.getBrightness() * value * meltFactor;
                 tmpVec.y = (int)tmpVec.y % (int)vidGrabber.getHeight(); // make the bottom pixels jump to the top
                 tmpVec.z += (tmpVec.y - yInitial) / 5;
 //                tmpVec.y += (sampleColor.getBrightness()) / 8;
@@ -126,10 +127,10 @@ void ofApp::draw(){
     mainMesh.drawFaces();
     cam.end();
 
-    //draw framerate for fun
-//    ofSetColor(255);
-//    string msg = "fps: " + ofToString(ofGetFrameRate(), 2);
-//    ofDrawBitmapString(msg, 10, 20);
+    //tell the user how loud input is
+    ofSetColor(255);
+    string msg = "amplitude: " + ofToString(smoothedVol, 4);
+    ofDrawBitmapString(msg, ofGetWidth() - msg.length() * 10, 20);
 
     if (toggleGuiDraw.get()) {
         ofDisableDepthTest();
@@ -234,6 +235,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 //--------------------------------------------------------------
 void ofApp::setAudioSource(bool& _useMicrophone) {
+
     if (_useMicrophone) {
         audioInput.setDeviceID(0); // microphone
     } else {
